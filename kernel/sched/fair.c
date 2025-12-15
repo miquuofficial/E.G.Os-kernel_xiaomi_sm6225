@@ -152,15 +152,15 @@ unsigned int sysctl_sched_cfs_bandwidth_slice		= 5000UL;
 
 #ifdef CONFIG_SCHED_WALT
 unsigned int sched_capacity_margin_up[CPU_NR] = {
-			[0 ... CPU_NR-1] = 1078}; /* ~5% margin */
+			[0 ... CPU_NR-1] = 1024}; /* ~5% margin */
 unsigned int sched_capacity_margin_down[CPU_NR] = {
-			[0 ... CPU_NR-1] = 1205}; /* ~15% margin */
+			[0 ... CPU_NR-1] = 1100}; /* ~15% margin */
 /* 1ms default for 20ms window size scaled to 1024 */
-unsigned int sysctl_sched_min_task_util_for_boost = 51;
+unsigned int sysctl_sched_min_task_util_for_boost = 40;
 /* 0.68ms default for 20ms window size scaled to 1024 */
-unsigned int sysctl_sched_min_task_util_for_colocation = 35;
-unsigned int sysctl_walt_rtg_cfs_boost_prio = 99; /* disabled by default */
-unsigned int sysctl_walt_low_latency_task_threshold; /* disabled by default */
+unsigned int sysctl_sched_min_task_util_for_colocation = 25;
+unsigned int sysctl_walt_rtg_cfs_boost_prio = 1; /* disabled by default */
+unsigned int sysctl_walt_low_latency_task_threshold = 30; /* disabled by default */
 __read_mostly unsigned int sysctl_sched_force_lb_enable = 1;
 #endif
 
@@ -1231,10 +1231,19 @@ static void update_curr(struct cfs_rq *cfs_rq)
 	curr->sum_exec_runtime += delta_exec;
 	schedstat_add(cfs_rq->exec_clock, delta_exec);
 
-	curr->vruntime += calc_delta_fair(delta_exec, curr);
-	resched = update_deadline(cfs_rq, curr);
-	update_min_vruntime(cfs_rq);
+curr->vruntime += calc_delta_fair(delta_exec, curr);
 
+u64 bonus = 0;
+struct task_struct *p = task_of(curr);
+
+if (p->prio < 120) {
+    bonus = 2000;
+}
+
+curr->vruntime -= bonus;
+
+resched = update_deadline(cfs_rq, curr);
+update_min_vruntime(cfs_rq);
 	if (entity_is_task(curr)) {
 		struct task_struct *curtask = task_of(curr);
 

@@ -16,7 +16,7 @@
 #define	DEFAULT_SYNC_RATIO	(8)
 
 /* Run each batch this many times*/
-#define DEFAULT_BATCH_COUNT	(10)
+#define DEFAULT_BATCH_COUNT	(4)
 
 struct anxiety_data {
 	struct list_head sync_queue;

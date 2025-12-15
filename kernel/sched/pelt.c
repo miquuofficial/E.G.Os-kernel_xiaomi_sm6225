@@ -38,7 +38,7 @@ static u64 decay_load(u64 val, u64 n)
 {
 	unsigned int local_n;
 
-	if (unlikely(n > LOAD_AVG_PERIOD * 63))
+	if (unlikely(n > LOAD_AVG_PERIOD * 16))
 		return 0;
 
 	/* after bounds checking we can collapse to 32-bit */
